@@ -321,8 +321,8 @@ passed to `a2ps'."
      :class transient-option
      :reader read-string)]]
 
-  [["Pretty-Printing"
-    ("E" "Highlight?" "--pretty-print="
+  [["Pretty Printing"
+    ("E" "Pretty Printer" "--pretty-print="
      :prompt "Pretty Printer? "
      :class transient-option
      :reader a2ps-transient--read-pretty-printer)]
