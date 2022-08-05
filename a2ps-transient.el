@@ -2,7 +2,7 @@
 
 ;; Author: Samuel W. Flint <swflint@flintfam.org>
 ;; URL: https://github.com/swflint/a2ps-transient
-;; Version: 0.0.1
+;; Version: 0.1.0
 ;; Package-Requires: ((emacs "28.0"))
 ;; Keywords: printer, transient, syntax-highlighting
 
@@ -32,13 +32,15 @@
 
 (defun a2ps-transient-read-file (prompt _initial-input _history)
   "Read a file name using PROMPT.
-Returns the name of an existing file."
+
+Returns the name of an existing file in a list."
   (list (file-local-name (expand-file-name (read-file-name prompt nil nil t)))))
 
 (defun a2ps-transient--get-default-file-or-buffer ()
   "Return list of files/buffer to print.
 
-In `dired-mode' get marked files.  Otherwise, if there's a filename, get it, else, the buffer."
+In `dired-mode' get marked files.  Otherwise, if there's a
+filename, get it, else, the buffer."
   (if (derived-mode-p 'dired-mode)
       (dired-get-marked-files)
     (or (when-let (file-name (buffer-file-name))
@@ -47,6 +49,7 @@ In `dired-mode' get marked files.  Otherwise, if there's a filename, get it, els
 
 (defun a2ps-transient--read-printer (prompt initial-input history)
   "Read printer name using PROMPT, respecting INITIAL-INPUT and HISTORY.
+
 Uses a2ps --list=printers to determine configured printers."
   (let ((filter-lines
          (lambda (lines)
@@ -126,13 +129,32 @@ Respects INITIAL-INPUT and HISTORY."
    (reader      :initform #'a2ps-transient-read-file)
    (always-read :initform t))
   "A transient class to read list of files.
-The slot `value' is either a list of files or a single buffer.")
+The slot `value' is either a list of files or a single buffer.
+
+Taken from `lp-transient'.")
+
+(cl-defmethod transient-format-value ((obj a2ps-transient-files-or-buf))
+  "Format OBJ's value for display and return the result.
+
+Taken from `lp-transient'."
+  (let ((argument (oref obj argument)))
+    (if-let ((value (oref obj value)))
+        (propertize
+         (if (listp value)
+             ;; Should be list of files.
+             (mapconcat (lambda (x)
+                          (file-relative-name
+                           (abbreviate-file-name (string-trim x "\"" "\""))))
+                        value " ")
+           ;; Should be a buffer
+           (prin1-to-string value))
+         'face 'transient-value)
+      (propertize argument 'face 'transient-inactive-value))))
 
 (transient-define-argument a2ps-transient--files ()
   :description "Files"
   :init-value (lambda (obj)
-                (setf (slot-value obj 'value)
-                      (a2ps-transient--get-default-file-or-buffer)))
+                (oset obj value (a2ps-transient--get-default-file-or-buffer)))
   :class 'a2ps-transient-files-or-buf)
 
 
@@ -153,7 +175,8 @@ The slot `value' is either a list of files or a single buffer.")
 (defun a2ps-transient-run (files &optional args)
   "Call `a2ps' with files/buffer.
 
-FILES is a buffer or list of files.  ARGS are other arguments passed to `a2ps'."
+FILES is a buffer or list of files.  ARGS are other arguments
+passed to `a2ps'."
   (interactive (list (a2ps-transient--get-default-file-or-buffer)))
   (unless (or (bufferp files)
               (listp files))
