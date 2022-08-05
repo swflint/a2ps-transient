@@ -31,7 +31,7 @@
 ;; Utilities
 
 (defun a2ps-transient-read-file (prompt _initial-input _history)
-  "Read a file name.
+  "Read a file name using PROMPT.
 Returns the name of an existing file."
   (list (file-local-name (expand-file-name (read-file-name prompt nil nil t)))))
 
@@ -46,7 +46,7 @@ In `dired-mode' get marked files.  Otherwise, if there's a filename, get it, els
         (current-buffer))))
 
 (defun a2ps-transient--read-printer (prompt initial-input history)
-  "Read printer name.
+  "Read printer name using PROMPT, respecting INITIAL-INPUT and HISTORY.
 Uses a2ps --list=printers to determine configured printers."
   (let ((filter-lines
          (lambda (lines)
@@ -66,7 +66,9 @@ Uses a2ps --list=printers to determine configured printers."
                      nil nil initial-input history)))
 
 (defun a2ps-transient--read-medium (prompt initial-input history)
-  ""
+  "Read a2ps medium using PROMPT.
+
+Respects INITIAL-INPUT and HISTORY."
   (let* ((lines (split-string (with-temp-buffer
                                 (call-process "a2ps" nil t nil "--list=media")
                                 (buffer-string))
@@ -82,7 +84,9 @@ Uses a2ps --list=printers to determine configured printers."
     (completing-read prompt media nil nil initial-input history)))
 
 (defun a2ps-transient--read-pretty-printer (prompt initial-input history)
-  ""
+  "PROMPT for pretty printer style sheet.
+
+Respects INITIAL-INPUT and HISTORY."
   (let* ((lines (split-string (with-temp-buffer
                                 (call-process "a2ps" nil t nil "--list=style-sheets")
                                 (buffer-string))
@@ -97,14 +101,21 @@ Uses a2ps --list=printers to determine configured printers."
     (completing-read prompt sheets nil nil initial-input history)))
 
 (defun a2ps-transient--read-highlight-level (prompt initial-input history)
+  "PROMPT for highlight level.
+
+Respects INITIAL-INPUT and HISTORY."
   (completing-read prompt '("none" "normal" "heavy") nil nil initial-input history))
 
 (defun a2ps-transient--read-sidedness (prompt initial-input history)
-  (completing-read prompt '("simplex" "1" "duplex" "tumble" "2") nil nil initial-input history))
+  "PROMPT for sidedness in printing.
+
+Respects INITIAL-INPUT and HISTORY."(completing-read prompt '("simplex" "1" "duplex" "tumble" "2") nil nil initial-input history))
 
 (defun a2ps-transient--read-alignment (prompt initial-input history)
-  ""
-  (completing read prompt '("fill" "rank" "page" "sheet") nil nil initial-input history))
+  "PROMPT for page alignment.
+
+Respects INITIAL-INPUT and HISTORY."
+  (completing-read prompt '("fill" "rank" "page" "sheet") nil nil initial-input history))
 
 
 ;; Options
@@ -131,6 +142,7 @@ The slot `value' is either a list of files or a single buffer.")
   "List of options to be passed by default for `a2ps'.")
 
 (defun a2ps-transient-save-options (args)
+  "Save a2ps ARGS."
   (interactive (list (cdr (transient-args 'a2ps-transient-menu))))
   (setq a2ps-transient-saved-options args)
   (message "Arguments saved."))
@@ -138,7 +150,7 @@ The slot `value' is either a list of files or a single buffer.")
 
 ;; Run Program
 
-(defun a2ps-transient (files &optional args)
+(defun a2ps-transient-run (files &optional args)
   "Call `a2ps' with files/buffer.
 
 FILES is a buffer or list of files.  ARGS are other arguments passed to `a2ps'."
@@ -164,9 +176,14 @@ FILES is a buffer or list of files.  ARGS are other arguments passed to `a2ps'."
     (error "No `a2ps' executable available")))
 
 (defun a2ps-transient-do-run (arguments)
-  "Call `a2ps-transient-run-a2ps' with `transient' arguments."
+  "Call `a2ps-transient-run-a2ps' with `transient' ARGUMENTS."
   (interactive (list (transient-args 'a2ps-transient-menu)))
-  (a2ps-transient (car arguments) (cdr arguments)))
+  (a2ps-transient-run (car arguments) (cdr arguments)))
+
+(defun a2ps-transient ()
+  "Start the a2ps transient menu."
+  (interactive)
+  (call-interactively #'a2ps-transient-menu))
 
 
 ;; Build the Transient
