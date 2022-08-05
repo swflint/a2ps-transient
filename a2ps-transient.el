@@ -1,7 +1,7 @@
 ;;; a2ps-transient.el --- A transient interface to a2ps -*- lexical-binding: t -*-
 
 ;; Author: Samuel W. Flint <swflint@flintfam.org>
-;; URL: https://github.com/swflint/a2ps-transient
+;; URL: https://git.sr.ht/~swflint/a2ps-transient
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "28.0"))
 ;; Keywords: printer, transient, syntax-highlighting
