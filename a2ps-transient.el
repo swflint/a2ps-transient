@@ -270,7 +270,7 @@ passed to `a2ps'."
     ("f" "Font Size" "--font-size="
      :prompt "Font Size? "
      :class transient-option
-     :reader read-number)
+     :reader transient-read-number-N+)
     ("L" "Lines per Page" "--lines-per-page="
      :prompt "Lines per Page? "
      :class transient-option
